@@ -100,27 +100,83 @@ int main(int argc, char * argv[]) {
 
 //handles each client connection
 void *connection_handler(void *socket_desc) {
-  printf("inside connection handler!\n");
   int sock = *(int*)socket_desc;
-  char *msg, client_msg[1024];
-  //LOGIN
+  char server_msg[1024], client_msg[1024], username[1024], password[1024];
+  char * line = NULL;
+  int returning = 0, valid_login = 0;
+  size_t len = 0;
+  ssize_t read;
+  //receive username from client
   if(recv(sock, client_msg, sizeof(client_msg), 0) == -1){
     perror("receive error\n");
     exit(1);
   }
-  printf("username: %s\n", client_msg);
-  
-
-
-  //Receive username from client and check status (new or existing user)
-  
+  //check if new or existing user
+  strcpy(username, client_msg);
+  FILE *fp = fopen("login.txt", "ab+");
+  while((read = getline(&line, &len, fp)) != -1){
+    char *token = strtok(line, ":");
+    if(strcmp(token, client_msg) == 0){
+      returning = 1;
+    }
+  }
+  if(!returning){
+    //fprintf(fp, client_msg);
+    strcpy(server_msg, "Welcome, new user! Please enter password:\n");
+  }
+  else {
+    strcpy(server_msg, "Welcome, returning user! Please enter password:\n");
+  }
+  fclose(fp);
   //Server requests password
+  if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1){
+    perror("Server send error\n");
+    exit(1);
+  }
 
   //Receive password from client
+  bzero((char *)& client_msg, sizeof(client_msg));
+  if(recv(sock, client_msg, sizeof(client_msg) + 1, 0) == -1){
+    perror("Server receive error\n");
+    exit(1);
+  }
+  strcpy(password, client_msg);
+  printf("password: %s", password);
 
   //Either register new user or check if password matches
+  FILE *fp2 = fopen("login.txt", "ab+");
+  if(returning){
+    while((read = getline(&line, &len, fp2)) != -1){
+      char *token = strtok(line, ":");
+      char *tok2 = strtok(NULL, ":");
+      if((strcmp(username, token) == 0) && (strcmp(password, tok2) == 0)){
+	printf("it's a match!\n");
+	valid_login = 1;
+      }
+    }
+  }
+  else {
+    strcat(username, ":");
+    fprintf(fp2, username);
+    strcat(password, "\n");
+    fprintf(fp2, password);
+    printf("inserted user!\n");
+    valid_login = 1;
+  }
+  fclose(fp2);
 
   //Send acknowledgement to client
+  /*bzero((char *)& server_msg, sizeof(server__msg));
+  if(valid_login){
+    strcpy(server_msg, "You are now logged in!\n");
+  } else {
+    strcpy(server_msg, "Incorrect password.\n");
+    }*/
+  //might have to do htons stuff?
+  if(send(sock, &valid_login, sizeof(valid_login), 0) == -1){
+    perror("Server send error\n");
+    exit(1);
+  }  
 
   //wait for operation command (while loop)
 }

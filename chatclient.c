@@ -77,12 +77,45 @@ int main(int argc, char * argv[]) {
     
     //LOGIN
     //client sends username to server
-    if(send(s, username, strlen(username) + 1, 0) == 1){
+    if(send(s, username, strlen(username) + 1, 0) == -1){
       perror("client send error\n");
       exit(1);
     }
-    else printf("sent username\n");
+    bzero((char *)& buf, sizeof(buf));
+    if(recv(s, buf, sizeof(buf) + 1, 0) == -1){
+      perror("Client receive error\n");
+      exit(1);
+    }
+    else{
+      printf("%s", buf);
+    }
 
+    //prompt for password
+    bzero((char *)& buf, sizeof(buf));
+    fgets(buf, sizeof(buf), stdin);
+    if(send(s, buf, sizeof(buf) + 1, 0) == -1) {
+      perror("client send error\n");
+      exit(1);
+    }
+
+    //receive password acknowledgement
+    /*bzero((char *)& buf, sizeof(buf));
+    if(recv(s, buf, sizeof(buf) + 1, 0) == -1){
+      perror("Client receive error\n");
+      exit(1);
+      }*/
+    int confirm;
+    if(recv(s, &confirm, sizeof(confirm), 0) == -1){
+      perror("Client receive error\n");
+      exit(1);
+    }
+    if(confirm){
+      printf("You are now logged in!\n");
+    } else {
+      printf("Incorrect password.\n");
+      exit(1);
+    }
+    printf("Welcome to Online Chat Room!\n\tEnter P for private conversation.\n\tEnter B for message broadcasting.\n\tEnter E to exit.\n");
 
     pthread_t thread;
     int rc = pthread_create(&thread, NULL, handle_messages, NULL);
@@ -91,13 +124,14 @@ int main(int argc, char * argv[]) {
 	printf("Error: unable to create thread\n");
 	exit(-1);
       }
+      printf(">> ");
       fgets(op, sizeof(op), stdin);
       if(strcmp(op, "P\n")==0){
       	private_message();
       } else if(strcmp(op, "B\n") == 0){
 	broadcast();
       } else if(strcmp(op, "E\n") == 0){
-	exit(-1);
+	exit(1);
       } else {
 	printf("Invalid Entry\n");
       }
