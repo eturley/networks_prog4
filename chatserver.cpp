@@ -92,7 +92,7 @@ int main(int argc, char * argv[]) {
       continue;
     }
     printf("Connection accepted.\n");
-    NUM_THREADS++;
+    NUM_THREADS++;//mutex lock
     if(pthread_create(&thread, NULL, connection_handler, (void*) &client_sock) < 0) {
       perror("error creating thread");
       return 1;
@@ -107,6 +107,7 @@ int main(int argc, char * argv[]) {
 
 //handles each client connection
 void *connection_handler(void *socket_desc) {
+  int exit = 0;
   int sock = *(int*)socket_desc;
   char server_msg[1024], client_msg[1024], username[1024], password[1024];
   //string server_msg, client_msg, username, password;
@@ -117,11 +118,11 @@ void *connection_handler(void *socket_desc) {
   //receive username from client
   if(recv(sock, client_msg, sizeof(client_msg)+1, 0) == -1){
     perror("receive error\n");
-    exit(1);
+    //exit(1);
   }
   //check if new or existing user
   strcpy(username, client_msg);
-  FILE *fp = fopen("login.txt", "ab+");
+  FILE *fp = fopen("login.txt", "ab+"); //lock
   while((read = getline(&line, &len, fp)) != -1){
     char *token = strtok(line, ":");
     if(strcmp(token, client_msg) == 0){
@@ -139,14 +140,14 @@ void *connection_handler(void *socket_desc) {
   //Server requests password
   if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1){
     perror("Server send error\n");
-    exit(1);
+    //exit(1);
   }
 
   //Receive password from client
   bzero((char *)& client_msg, sizeof(client_msg));
   if(recv(sock, client_msg, sizeof(client_msg) + 1, 0) == -1){
     perror("Server receive error\n");
-    exit(1);
+    //exit(1);
   }
   strcpy(password, client_msg);
   printf("password: %s", password);
@@ -184,8 +185,99 @@ void *connection_handler(void *socket_desc) {
   //might have to do htons stuff?
   if(send(sock, &valid_login, sizeof(valid_login), 0) == -1){
     perror("Server send error\n");
-    exit(1);
+    //exit(1);
   }  
 
-  //wait for operation command (while loop)
+  //wait for operation
+  while (exit == 0) {
+    bzero((char *)& client_msg, sizeof(client_msg));
+    bzero((char *)& server_msg, sizeof(client_msg));
+    if(recv(sock, client_msg, sizeof(client_msg) + 1, 0) == -1){
+      perror("Server receive error\n");
+      //exit(1);
+    }
+    
+    if (client_msg[0] == 'P'){ //private message
+      int target_sock, found = 0;
+      string private_message;
+      //generate list of current users 
+      strcpy(server_msg, "Current Users: \n");
+      for (auto it = current_users.begin(); it != current_users.end(); it++) {
+        strcat(server_msg, (it->first).c_str());
+        strcat(server_msg, "\n");
+      }
+      //send current users to client 
+      if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1){
+        perror("Server send error\n");
+        //exit(1);
+      }
+      
+      //receive username of private message 
+      bzero((char *)& username, sizeof(client_msg));
+      if(recv(sock, username, sizeof(client_msg) + 1, 0) == -1){
+        perror("Server receive error\n");
+        //exit(1);
+      }
+      
+      //receive message
+      bzero((char *)& client_msg, sizeof(client_msg));
+      if(recv(sock, client_msg, sizeof(client_msg) + 1, 0) == -1){
+        perror("Server receive error\n");
+        //exit(1);
+      }
+      
+      //find socket number for target user
+      for (auto it = current_users.begin(); it != current_users.end(); it++) {
+        if (strcmp((it->first).c_str(), username) == 0) {
+          target_sock = it->second;
+          found = 1;
+          break;
+        }
+      }
+      
+      //send to target user
+      if (found == 1) {
+        if(send(target_sock, client_msg, sizeof(server_msg) + 1, 0) == -1){
+          perror("Server send error\n");
+          //exit(1);
+        }
+      }
+      
+      //send confirmation or that user did not exist
+      if (found == 1) {
+        
+      } else {
+      
+      }
+     
+    }
+      
+    else if(client_msg[0] == 'B') { //broadcast message
+      //broadcast
+    }
+    
+    else if(client_msg[0] == 'E'){ //exiting
+      //remove username from current users
+      //exit = 1;
+      continue;
+    }
+      
+  }
+  //begin shutdown protocol
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 }
