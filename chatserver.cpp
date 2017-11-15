@@ -190,6 +190,8 @@ void *connection_handler(void *socket_desc) {
 
   //wait for operation
   while (leave == 0) {
+    char * a = "C";
+    char * b = "D";
     bzero((char *)& client_msg, sizeof(client_msg));
     bzero((char *)& server_msg, sizeof(client_msg));
     if(recv(sock, client_msg, sizeof(client_msg) + 1, 0) == -1){
@@ -207,7 +209,7 @@ void *connection_handler(void *socket_desc) {
         strcat(server_msg, "\n");
       }
       //send current users to client 
-      strcat("C", server_msg);
+      strcat(a, server_msg);
       if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1){
         perror("Server send error\n");
         //exit(1);
@@ -237,7 +239,7 @@ void *connection_handler(void *socket_desc) {
       }
       
       //send to target user
-      strcat("D",client_msg);
+      strcat(b,client_msg);
       if (found == 1) {
         if(send(target_sock, client_msg, sizeof(client_msg) + 1, 0) == -1){
           perror("Server send error\n");
@@ -249,14 +251,14 @@ void *connection_handler(void *socket_desc) {
       bzero((char *)& server_msg, sizeof(client_msg));
       if (found == 1) {
         strcpy(server_msg, "Message Sent: Confirmed\n");
-        strcat("C", server_msg);
+        strcat(b, server_msg);
         if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1){
           perror("Server send error\n");
           //exit(1);
         }
       } else {
         strcpy(server_msg, "User did not exist.\n");
-        strcat("C", server_msg);
+        strcat(a, server_msg);
         if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1){
           perror("Server send error\n");
           //exit(1);
