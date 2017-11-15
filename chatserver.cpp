@@ -107,7 +107,7 @@ int main(int argc, char * argv[]) {
 
 //handles each client connection
 void *connection_handler(void *socket_desc) {
-  int exit = 0;
+  int leave = 0;
   int sock = *(int*)socket_desc;
   char server_msg[1024], client_msg[1024], username[1024], password[1024];
   //string server_msg, client_msg, username, password;
@@ -189,7 +189,7 @@ void *connection_handler(void *socket_desc) {
   }  
 
   //wait for operation
-  while (exit == 0) {
+  while (leave == 0) {
     bzero((char *)& client_msg, sizeof(client_msg));
     bzero((char *)& server_msg, sizeof(client_msg));
     if(recv(sock, client_msg, sizeof(client_msg) + 1, 0) == -1){
@@ -239,7 +239,7 @@ void *connection_handler(void *socket_desc) {
       //send to target user
       strcat("D",client_msg);
       if (found == 1) {
-        if(send(target_sock, client_msg, sizeof(server_msg) + 1, 0) == -1){
+        if(send(target_sock, client_msg, sizeof(client_msg) + 1, 0) == -1){
           perror("Server send error\n");
           //exit(1);
         }

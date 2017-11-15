@@ -24,6 +24,8 @@ void *handle_messages(void *socket_desc);
 void private_message();
 void broadcast();
 vector<string> command_messages;
+char buf[MAX_LINE];;
+int s, leave = 0;
 
 int main(int argc, char * argv[]) {
     
@@ -33,9 +35,9 @@ int main(int argc, char * argv[]) {
     struct hostent *hp;
     struct sockaddr_in sin;
     socklen_t addr_len;
-    char buf[MAX_LINE];
-    int s, len, ServerPort, fd, bytes_read, bytes_written, exit == 0;
-
+    //char buf[MAX_LINE];
+    int len, ServerPort, fd, bytes_read, bytes_written;
+    //int s;
     //proj4 variables
     char *username;
     char *host;
@@ -120,8 +122,8 @@ int main(int argc, char * argv[]) {
       printf("Error: unable to create thread\n");
       exit(-1);
     }
-    while(exit == 0) {
-      string curr_message;
+    while(leave == 0) {
+      string curr_message; string message_to_send; string target_user;
       printf("Welcome to Online Chat Room!\n\tEnter P for private conversation.\n\tEnter B for message broadcasting.\n\tEnter E to exit.\n");
 
         printf(">> ");
@@ -129,37 +131,53 @@ int main(int argc, char * argv[]) {
         if(strcmp(op, "P\n")==0){
           if(send(s, op, strlen(op) + 1, 0) == -1){
             perror("client send error\n");
-            //exit(1);
+            exit(1);
            }
         	//lock
         	while(1) { //get list of current users
         	  if(command_messages.size() > 0) {
         	    curr_message = command_messages[0];
-        	    command_messages.erase(0);
+        	    command_messages.erase(command_messages.begin());
         	    break;
       	    }
         	}
         	
-        	//print out current users 
+        	//print out current users
+        	cout << "Here are the current users online: \n" << curr_message << endl; 
         	
         	//prompt user for username
+        	cout << "Please enter the user you would like to chat with >> ";
+        	bzero((char *)& username, sizeof(username));
+        	cin >> target_user;
         	
         	//send username
-        	
+          if(send(s, target_user.c_str(), strlen(target_user.c_str()) + 1, 0) == -1){
+            perror("client send error\n");
+            exit(1);
+           }
+        
         	//prompt for message to be sent
+        	cout << "Please enter the message you would like to send>> ";
+        	cin >> message_to_send;
         	
         	//send message
+        	if(send(s, message_to_send.c_str(), strlen(message_to_send.c_str()) + 1, 0) == -1){
+            perror("client send error\n");
+            exit(1);
+           }
         	
         	//receive confirmation from server_msg
         	//lock
         	while(1) { //get list of current users
         	  if(command_messages.size() > 0) {
         	    curr_message = command_messages[0];
-        	    command_messages.erase(0);
+        	    command_messages.erase(command_messages.begin());
         	    break;
       	    }
         	}
+        	
         	//print out confirmation
+        	cout << curr_message << endl;
         	
         	private_message();
         } else if(strcmp(op, "B\n") == 0){
@@ -179,9 +197,10 @@ int main(int argc, char * argv[]) {
 
 //determine if data or command message
 void *handle_messages(void *socket_desc){
+  //char buf[MAX_LINE]; int s;
   string message;
   string user = "temp user";
-  while(exit == 0) {
+  while(leave == 0) {
     bzero((char *)& buf, sizeof(buf));
       if(recv(s, buf, sizeof(buf) + 1, 0) == -1){
         perror("Client receive error\n");
@@ -189,11 +208,11 @@ void *handle_messages(void *socket_desc){
     }
     message = buf;
     //send command messages to command vector and print messages from other clients
-    if(message[0] == "C") {
-      command_messages.push_back(message) //lock
+    if(message.at(0) == 'C') {
+      command_messages.push_back(message); //lock
     } else {
       message.erase(0,1);
-      cout << "#### New Message: Message Received from " << user << ": " << message << "####\n" << endl 
+      cout << "#### New Message: Message Received from " << user << ": " << message << "####\n" << endl; 
     }
   }
 }
