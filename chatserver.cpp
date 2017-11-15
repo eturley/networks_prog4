@@ -27,15 +27,15 @@
 using namespace std;
 
 void *connection_handler(void *socket_desc);
+vector<pair<string, int> > current_users;
 
 int main(int argc, char * argv[]) {
   char timeStamp[90];
   time_t ltime;
   struct tm *Tm; 
   struct timeval tv;
-  int stampLength, i, len, addr_len,s, new_s, f, status, fd, portNum, messageLength, bytes_sent;
+  int stampLength, i, len, s, new_s, f, status, fd, portNum, messageLength, bytes_sent;
   struct sockaddr_in sin, client_addr;
-  //struct sockaddr_in client_addr;
   char buf[MAX_LINE], *fullMessage, encMessage[4096], *encKey, *opt;
   DIR *d;
   struct dirent *de;
@@ -44,8 +44,10 @@ int main(int argc, char * argv[]) {
   char path[256], perms[MAX_LINE];
 
   //proj4 variables
-  int client_sock, NUM_THREADS = 0;
-  
+  int  NUM_THREADS = 0;
+  int client_sock;
+  socklen_t addr_len;
+
   if (argc == 2){
     portNum = atoi(argv[1]);
   }
@@ -106,50 +108,47 @@ int main(int argc, char * argv[]) {
 //handles each client connection
 void *connection_handler(void *socket_desc) {
   int sock = *(int*)socket_desc;
-  //char server_msg[1024], client_msg[1024], username[1024], password[1024];
-  string server_msg, client_msg, username, password;
+  char server_msg[1024], client_msg[1024], username[1024], password[1024];
+  //string server_msg, client_msg, username, password;
   char * line = NULL;
   int returning = 0, valid_login = 0;
   size_t len = 0;
   ssize_t read;
   //receive username from client
-  if(recv(sock, client_msg.c_str(), sizeof(client_msg.c_str()), 0) == -1){
+  if(recv(sock, client_msg, sizeof(client_msg)+1, 0) == -1){
     perror("receive error\n");
     exit(1);
   }
   //check if new or existing user
-  //strcpy(username, client_msg);
-  username = client_msg;
+  strcpy(username, client_msg);
   FILE *fp = fopen("login.txt", "ab+");
   while((read = getline(&line, &len, fp)) != -1){
     char *token = strtok(line, ":");
-    //if(strcmp(token, client_msg) == 0){
-    if(token == client_msg){
+    if(strcmp(token, client_msg) == 0){
       returning = 1;
     }
   }
   if(!returning){
     //fprintf(fp, client_msg);
-    server_msg = "Welcome, new user! Please enter password:\n";
+    strcpy(server_msg, "Welcome, new user! Please enter password:\n");
   }
   else {
-    server_msg = "Welcome, returning user! Please enter password:\n";
+    strcpy(server_msg, "Welcome, returning user! Please enter password:\n");
   }
   fclose(fp);
   //Server requests password
-  if(send(sock, server_msg, server_msg.length() + 1, 0) == -1){
+  if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1){
     perror("Server send error\n");
     exit(1);
   }
 
   //Receive password from client
   bzero((char *)& client_msg, sizeof(client_msg));
-  if(recv(sock, client_msg, client_msg.length() + 1, 0) == -1){
+  if(recv(sock, client_msg, sizeof(client_msg) + 1, 0) == -1){
     perror("Server receive error\n");
     exit(1);
   }
-  //strcpy(password, client_msg);
-  password = client_msg;
+  strcpy(password, client_msg);
   printf("password: %s", password);
 
   //Either register new user or check if password matches
@@ -158,24 +157,29 @@ void *connection_handler(void *socket_desc) {
     while((read = getline(&line, &len, fp2)) != -1){
       char *token = strtok(line, ":");
       char *tok2 = strtok(NULL, ":");
-      //if((strcmp(username, token) == 0) && (strcmp(password, tok2) == 0)){
-      if((username == token) && (password == tok2)){
-	printf("it's a match!\n");
+      if((strcmp(username, token) == 0) && (strcmp(password, tok2) == 0)){
+      	printf("it's a match!\n");
 	valid_login = 1;
       }
     }
   }
   else {
-    //strcat(username, ":");
-    username = username + ":";
+    strcat(username, ":");
     fprintf(fp2, username);
-    //strcat(password, "\n");
-    password = password + "\n";
+    strcat(password, "\n");
     fprintf(fp2, password);
     printf("inserted user!\n");
     valid_login = 1;
   }
   fclose(fp2);
+
+
+  string user;
+  //add current users to a vector
+  if(valid_login){
+    user = username;
+    current_users.push_back(make_pair(user, sock));
+  }
 
   //might have to do htons stuff?
   if(send(sock, &valid_login, sizeof(valid_login), 0) == -1){

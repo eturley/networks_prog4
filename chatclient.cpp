@@ -36,11 +36,10 @@ int main(int argc, char * argv[]) {
     int s, len, ServerPort, fd, bytes_read, bytes_written;
 
     //proj4 variables
-    //char *username;
-    //char *host;
-    //char *op;
-    string username, host, op;
-
+    char *username;
+    char *host;
+    char *op;
+    
     //Command Line Arguments
     if (argc == 4) {
         host = argv[1];
@@ -79,7 +78,7 @@ int main(int argc, char * argv[]) {
     
     //LOGIN
     //client sends username to server
-    if(send(s, username, username.length() + 1, 0) == -1){
+    if(send(s, username, strlen(username) + 1, 0) == -1){
       perror("client send error\n");
       exit(1);
     }
@@ -122,15 +121,12 @@ int main(int argc, char * argv[]) {
       }
       printf(">> ");
       fgets(op, sizeof(op), stdin);
-      //if(strcmp(op, "P\n")==0){
-      if (op == "P\n"){
+      if(strcmp(op, "P\n")==0){
       	private_message();
-      } //else if(strcmp(op, "B\n") == 0){
-      else if(op == "B\n"){
-	broadcast();
-      } //else if(strcmp(op, "E\n") == 0){
-      else if(op == "E\n"){
-	break;
+      } else if(strcmp(op, "B\n") == 0){
+      	broadcast();
+      } else if(strcmp(op, "E\n") == 0){
+      	break;
 	//exit(1);
       } else {
 	printf("Invalid Entry\n");
@@ -143,13 +139,12 @@ int main(int argc, char * argv[]) {
 
 //determine if data or command message
 void *handle_messages(void *socket_desc){
-  return;
 }
 
 void private_message(){
-  return;
+  //return;
 }
 
 void broadcast(){
-  return;
+  //return;
 }
