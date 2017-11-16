@@ -137,13 +137,17 @@ int main(int argc, char * argv[]) {
             perror("client send error\n");
             exit(1);
            }
+           
+           cout << "send it" << endl;
         	//lock
         	while(1) { //get list of current users
-        	  if(command_messages.size() > 0) {
-        	    curr_message = command_messages[0];
-        	    command_messages.erase(command_messages.begin());
-        	    break;
-      	    }
+          	  if(command_messages.size() > 0) {
+          	    cout << "found a message" << endl;
+          	    curr_message = command_messages[0];
+          	    command_messages.erase(command_messages.begin());
+          	    break;
+        	    }
+      	   
         	}
         	
         	//print out current users
@@ -204,14 +208,15 @@ void *handle_messages(void *socket_desc){
   //char buf[MAX_LINE]; int s;
   string message;
   string user = "temp user";
-  //cout << "well this is going" << endl;
   while(leave == 0) {
     bzero((char *)& buf, sizeof(buf));
       if(recv(s, buf, sizeof(buf) + 1, 0) == -1){
         perror("Client receive error\n");
         //exit(1);
     }
+    cout << "well this is going" << endl;
     message = buf;
+    cout << "message: " << message << endl;
     //send command messages to command vector and print messages from other clients
     if(message.at(0) == 'C') {
       command_messages.push_back(message); //lock

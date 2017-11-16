@@ -198,8 +198,9 @@ void *connection_handler(void *socket_desc) {
       perror("Server receive error\n");
       //exit(1);
     }
-    cout << "got the message" << endl;
+    cout << "got the message: " << client_msg << endl;
     if (client_msg[0] == 'P'){ //private message
+      cout << "found the private!" << endl;
       int target_sock, found = 0;
       string private_message;
       //generate list of current users 
