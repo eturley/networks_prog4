@@ -123,13 +123,17 @@ int main(int argc, char * argv[]) {
       exit(-1);
     }
     while(leave == 0) {
-      string curr_message; string message_to_send; string target_user;
+      string curr_message; string message_to_send; string target_user; string message_type;
       printf("Welcome to Online Chat Room!\n\tEnter P for private conversation.\n\tEnter B for message broadcasting.\n\tEnter E to exit.\n");
 
         printf(">> ");
-        fgets(op, sizeof(op), stdin);
-        if(strcmp(op, "P\n")==0){
-          if(send(s, op, strlen(op) + 1, 0) == -1){
+        //fgets(op, sizeof(op), stdin);
+        cin >> message_type;
+        //usleep(3000000);
+        cout << "here" << endl;
+        if(strcmp(message_type.c_str(), "P")==0){
+          cout << "in private" << endl;
+          if(send(s, message_type.c_str(), strlen(message_type.c_str()) + 1, 0) == -1){
             perror("client send error\n");
             exit(1);
            }
@@ -200,6 +204,7 @@ void *handle_messages(void *socket_desc){
   //char buf[MAX_LINE]; int s;
   string message;
   string user = "temp user";
+  //cout << "well this is going" << endl;
   while(leave == 0) {
     bzero((char *)& buf, sizeof(buf));
       if(recv(s, buf, sizeof(buf) + 1, 0) == -1){

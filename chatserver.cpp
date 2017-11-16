@@ -198,7 +198,7 @@ void *connection_handler(void *socket_desc) {
       perror("Server receive error\n");
       //exit(1);
     }
-    
+    cout << "got the message" << endl;
     if (client_msg[0] == 'P'){ //private message
       int target_sock, found = 0;
       string private_message;
