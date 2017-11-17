@@ -129,20 +129,15 @@ int main(int argc, char * argv[]) {
         printf(">> ");
         //fgets(op, sizeof(op), stdin);
         cin >> message_type;
-        //usleep(3000000);
-        cout << "here" << endl;
         if(strcmp(message_type.c_str(), "P")==0){
-          cout << "in private" << endl;
           if(send(s, message_type.c_str(), strlen(message_type.c_str()) + 1, 0) == -1){
             perror("client send error\n");
             exit(1);
            }
            
-           cout << "send it" << endl;
         	//lock
         	while(1) { //get list of current users
           	  if(command_messages.size() > 0) {
-          	    cout << "found a message" << endl;
           	    curr_message = command_messages[0];
           	    command_messages.erase(command_messages.begin());
           	    break;
@@ -197,9 +192,10 @@ int main(int argc, char * argv[]) {
 	        printf("Invalid Entry\n");
         }
       
-      if(close(s) != 0) {
+      
+    }
+    if(close(s) != 0) {
         printf("Socket was not closed\n");
-      }
     }
 }
 
@@ -214,11 +210,10 @@ void *handle_messages(void *socket_desc){
         perror("Client receive error\n");
         //exit(1);
     }
-    cout << "well this is going" << endl;
     message = buf;
-    cout << "message: " << message << endl;
     //send command messages to command vector and print messages from other clients
     if(message.at(0) == 'C') {
+      message.erase(0,1);
       command_messages.push_back(message); //lock
     } else {
       message.erase(0,1);

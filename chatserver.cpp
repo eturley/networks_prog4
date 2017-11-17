@@ -115,13 +115,24 @@ void *connection_handler(void *socket_desc) {
   int returning = 0, valid_login = 0;
   size_t len = 0;
   ssize_t read;
+  
+  /*
   //receive username from client
   if(recv(sock, client_msg, sizeof(client_msg)+1, 0) == -1){
     perror("receive error\n");
     //exit(1);
   }
   //check if new or existing user
-  strcpy(username, client_msg);
+  strcpy(username, client_msg);*/
+  
+  if(recv(sock, username, sizeof(username)+1, 0) == -1){
+    perror("receive error\n");
+    //exit(1);
+  }
+  
+  
+  
+  
   FILE *fp = fopen("login.txt", "ab+"); //lock
   while((read = getline(&line, &len, fp)) != -1){
     char *token = strtok(line, ":");
@@ -151,7 +162,6 @@ void *connection_handler(void *socket_desc) {
   }
   strcpy(password, client_msg);
   printf("password: %s", password);
-
   //Either register new user or check if password matches
   FILE *fp2 = fopen("login.txt", "ab+");
   if(returning){
@@ -165,6 +175,7 @@ void *connection_handler(void *socket_desc) {
     }
   }
   else {
+    //cout << "username is: " << username << endl;
     strcat(username, ":");
     fprintf(fp2, username);
     strcat(password, "\n");
@@ -179,7 +190,8 @@ void *connection_handler(void *socket_desc) {
   //add current users to a vector
   if(valid_login){
     user = username;
-    current_users.push_back(make_pair(user, sock));
+    //user = "user2";
+    current_users.push_back(make_pair(user, sock)); //lock
   }
 
   //might have to do htons stuff?
@@ -190,28 +202,33 @@ void *connection_handler(void *socket_desc) {
 
   //wait for operation
   while (leave == 0) {
-    char * a = "C";
-    char * b = "D";
+    char  a[1024];
+    char  b[1024];
+    bzero((char *)& a, sizeof(a));
+    bzero((char *)& b, sizeof(b));
+    char mod[1024];
+    strcat(a, "C");
+    strcat(b, "D");
     bzero((char *)& client_msg, sizeof(client_msg));
     bzero((char *)& server_msg, sizeof(client_msg));
+    bzero((char *)& mod, sizeof(mod));
     if(recv(sock, client_msg, sizeof(client_msg) + 1, 0) == -1){
       perror("Server receive error\n");
       //exit(1);
     }
-    cout << "got the message: " << client_msg << endl;
     if (client_msg[0] == 'P'){ //private message
       cout << "found the private!" << endl;
       int target_sock, found = 0;
       string private_message;
       //generate list of current users 
-      strcpy(server_msg, "Current Users: \n");
       for (auto it = current_users.begin(); it != current_users.end(); it++) {
         strcat(server_msg, (it->first).c_str());
         strcat(server_msg, "\n");
       }
       //send current users to client 
-      strcat(a, server_msg);
-      if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1){
+      strcat(mod,a);
+      strcat(mod, server_msg);
+      if(send(sock, mod, sizeof(mod) + 1, 0) == -1){
         perror("Server send error\n");
         //exit(1);
       }
@@ -240,9 +257,11 @@ void *connection_handler(void *socket_desc) {
       }
       
       //send to target user
-      strcat(b,client_msg);
+      bzero((char *)& mod, sizeof(mod));
+      strcat(mod, b);
+      strcat(mod, client_msg);
       if (found == 1) {
-        if(send(target_sock, client_msg, sizeof(client_msg) + 1, 0) == -1){
+        if(send(target_sock, mod, sizeof(mod) + 1, 0) == -1){
           perror("Server send error\n");
           //exit(1);
         }
@@ -251,16 +270,21 @@ void *connection_handler(void *socket_desc) {
       //send confirmation or that user did not exist
       bzero((char *)& server_msg, sizeof(client_msg));
       if (found == 1) {
+        cout << "send confirmed message" << endl;
         strcpy(server_msg, "Message Sent: Confirmed\n");
-        strcat(b, server_msg);
-        if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1){
+        bzero((char *)& mod, sizeof(mod));
+        strcat(mod, b);
+        strcat(mod, server_msg);
+        if(send(sock,mod, sizeof(mod) + 1, 0) == -1){
           perror("Server send error\n");
           //exit(1);
         }
       } else {
         strcpy(server_msg, "User did not exist.\n");
-        strcat(a, server_msg);
-        if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1){
+        bzero((char *)& mod, sizeof(mod));
+        strcat(mod,a);
+        strcat(mod, server_msg);
+        if(send(sock, mod, sizeof(mod) + 1, 0) == -1){
           perror("Server send error\n");
           //exit(1);
         }
@@ -286,7 +310,7 @@ void *connection_handler(void *socket_desc) {
 	  // send message to all clients
       for (auto it = current_users.begin(); it != current_users.end(); it++) {
 		if(send(it->second, client_msg, sizeof(client_msg) + 1, 0) == -1) {
-		  perror("Server send broadcast message error")
+		  perror("Server send broadcast message error");
 		  exit(1);
         }
 	  }
