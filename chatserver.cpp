@@ -1,5 +1,5 @@
 //Marco Bruscia, Erin Turley, Michael Parowski
-//netid: jbruscia, eturly, mparowsk
+//netid: jbruscia, eturley, mparowsk
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -115,23 +115,11 @@ void *connection_handler(void *socket_desc) {
   int returning = 0, valid_login = 0;
   size_t len = 0;
   ssize_t read;
-  
-  /*
-  //receive username from client
-  if(recv(sock, client_msg, sizeof(client_msg)+1, 0) == -1){
-    perror("receive error\n");
-    //exit(1);
-  }
-  //check if new or existing user
-  strcpy(username, client_msg);*/
-  
+    
   if(recv(sock, username, sizeof(username)+1, 0) == -1){
     perror("receive error\n");
     //exit(1);
   }
-  
-  
-  
   
   FILE *fp = fopen("login.txt", "ab+"); //lock
   while((read = getline(&line, &len, fp)) != -1){
@@ -190,6 +178,7 @@ void *connection_handler(void *socket_desc) {
   //add current users to a vector
   if(valid_login){
     user = username;
+    user = user.substr(0, user.size() - 1);
     //user = "user2";
     current_users.push_back(make_pair(user, sock)); //lock
   }
@@ -289,38 +278,37 @@ void *connection_handler(void *socket_desc) {
           //exit(1);
         }
       }
-     
     }
       
     else if(client_msg[0] == 'B') { //broadcast message
-	  // send ack to client to prompt for message to be sent
+      // send ack to client to prompt for message to be sent
       bzero((char *)& server_msg, sizeof(client_msg));
-	  strcpy(server_msg, "Broadcast command received. Ready to receive message\n");
+      strcpy(server_msg, "Broadcast command received. Ready to receive message\n");
       if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1){
         perror("Server send error\n");
       }
 
-	  // receive message from client
-	  bzero((char *)& client_msg, sizeof(client_msg));
+      // receive message from client
+      bzero((char *)& client_msg, sizeof(client_msg));
       if(recv(sock, client_msg, sizeof(client_msg) + 1, 0) == -1){
         perror("Server receive error\n");
         //exit(1);
       }
 
-	  // send message to all clients
+      // send message to all clients
       for (auto it = current_users.begin(); it != current_users.end(); it++) {
-		if(send(it->second, client_msg, sizeof(client_msg) + 1, 0) == -1) {
-		  perror("Server send broadcast message error");
-		  exit(1);
+	if(send(it->second, client_msg, sizeof(client_msg) + 1, 0) == -1) {
+	  perror("Server send broadcast message error");
+	  exit(1);
         }
-	  }
+      }
 
-	  // send confirmation that message was sent
-	  bzero((char *)& server_msg, sizeof(client_msg));
-	  strcpy(server_msg, "Broadcast message was successfully sent.\n");
-	  if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1)
-	    perror("Server confirmation send error");
-
+      // send confirmation that message was sent
+      bzero((char *)& server_msg, sizeof(client_msg));
+      strcpy(server_msg, "Broadcast message was successfully sent.\n");
+      if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1)
+	perror("Server confirmation send error");
+      
     }
     
     else if(client_msg[0] == 'E'){ //exiting
@@ -330,21 +318,6 @@ void *connection_handler(void *socket_desc) {
     }
       
   }
-  //begin shutdown protocol
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+  //begin shutdown protocol  
 }

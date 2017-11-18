@@ -123,79 +123,80 @@ int main(int argc, char * argv[]) {
       exit(-1);
     }
     while(leave == 0) {
-      string curr_message; string message_to_send; string target_user; string message_type;
+      string curr_message; 
+      string message_to_send; 
+      string target_user; 
+      string message_type;
       printf("Welcome to Online Chat Room!\n\tEnter P for private conversation.\n\tEnter B for message broadcasting.\n\tEnter E to exit.\n");
 
-        printf(">> ");
-        //fgets(op, sizeof(op), stdin);
-        cin >> message_type;
-        if(strcmp(message_type.c_str(), "P")==0){
-          if(send(s, message_type.c_str(), strlen(message_type.c_str()) + 1, 0) == -1){
-            perror("client send error\n");
-            exit(1);
-           }
-           
-        	//lock
-        	while(1) { //get list of current users
-          	  if(command_messages.size() > 0) {
-          	    curr_message = command_messages[0];
-          	    command_messages.erase(command_messages.begin());
-          	    break;
-        	    }
-      	   
-        	}
-        	
-        	//print out current users
-        	cout << "Here are the current users online: \n" << curr_message << endl; 
-        	
-        	//prompt user for username
-        	cout << "Please enter the user you would like to chat with >> ";
-        	bzero((char *)& username, sizeof(username));
-        	cin >> target_user;
-        	
-        	//send username
-          if(send(s, target_user.c_str(), strlen(target_user.c_str()) + 1, 0) == -1){
-            perror("client send error\n");
-            exit(1);
-           }
+      printf(">> ");
+      //fgets(op, sizeof(op), stdin);
+      cin >> message_type;
+      if(strcmp(message_type.c_str(), "P")==0){
+	if(send(s, message_type.c_str(), strlen(message_type.c_str()) + 1, 0) == -1){
+	  perror("client send error\n");
+	  exit(1);
+	}
         
-        	//prompt for message to be sent
-        	cout << "Please enter the message you would like to send>> ";
-        	cin >> message_to_send;
-        	
-        	//send message
-        	if(send(s, message_to_send.c_str(), strlen(message_to_send.c_str()) + 1, 0) == -1){
-            perror("client send error\n");
-            exit(1);
-           }
-        	
-        	//receive confirmation from server_msg
-        	//lock
-        	while(1) { //get list of current users
-        	  if(command_messages.size() > 0) {
-        	    curr_message = command_messages[0];
-        	    command_messages.erase(command_messages.begin());
-        	    break;
-      	    }
-        	}
-        	
-        	//print out confirmation
-        	cout << curr_message << endl;
-        	
-        	private_message();
-        } else if(strcmp(op, "B\n") == 0){
-        	broadcast();
-        } else if(strcmp(op, "E\n") == 0){
-        	break;
-	  //exit(1);
-        } else {
-	        printf("Invalid Entry\n");
-        }
+	//lock
+	while(1) { //get list of current users
+	  if(command_messages.size() > 0) {
+	    curr_message = command_messages[0];
+	    command_messages.erase(command_messages.begin());
+	    break;
+	  }  
+	}	
+	//print out current users
+	cout << "Here are the current users online: \n" << curr_message << endl; 
+        
+	//prompt user for username
+	cout << "Please enter the user you would like to chat with >> ";
+	bzero((char *)& username, sizeof(username));
+	cin >> target_user;
+        
+	//send username
+	if(send(s, target_user.c_str(), strlen(target_user.c_str()) + 1, 0) == -1){
+	  perror("client send error\n");
+	  exit(1);
+	}
+        
+	//prompt for message to be sent
+	cout << "Please enter the message you would like to send>> ";
+	cin >> message_to_send;
+        
+	//send message
+	if(send(s, message_to_send.c_str(), strlen(message_to_send.c_str()) + 1, 0) == -1){
+	  perror("client send error\n");
+	  exit(1);
+	}
+        
+	//receive confirmation from server_msg
+	//lock
+	while(1) { //get list of current users
+	  if(command_messages.size() > 0) {
+	    curr_message = command_messages[0];
+	    command_messages.erase(command_messages.begin());
+	    break;
+	  }
+	}
+        
+	//print out confirmation
+	cout << curr_message << endl;
+        
+	private_message();
+      } else if(strcmp(op, "B\n") == 0){
+	broadcast();
+      } else if(strcmp(op, "E\n") == 0){
+	break;
+	//exit(1);
+      } else {
+	printf("Invalid Entry\n");
+      }
       
       
     }
     if(close(s) != 0) {
-        printf("Socket was not closed\n");
+      printf("Socket was not closed\n");
     }
 }
 
