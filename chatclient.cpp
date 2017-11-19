@@ -123,6 +123,7 @@ int main(int argc, char * argv[]) {
       exit(-1);
     }
     while(leave == 0) {
+      cout << "in while loop" << endl;
       string curr_message; 
       string message_to_send; 
       string target_user; 
@@ -132,6 +133,8 @@ int main(int argc, char * argv[]) {
       printf(">> ");
       //fgets(op, sizeof(op), stdin);
       cin >> message_type;
+
+      //Private Message
       if(strcmp(message_type.c_str(), "P")==0){
 	if(send(s, message_type.c_str(), strlen(message_type.c_str()) + 1, 0) == -1){
 	  perror("client send error\n");
@@ -176,25 +179,32 @@ int main(int argc, char * argv[]) {
 	  if(command_messages.size() > 0) {
 	    curr_message = command_messages[0];
 	    command_messages.erase(command_messages.begin());
+	    cout << curr_message;
 	    break;
 	  }
+	  //break;
 	}
-        
+	cout << "out of while loop"<<endl;
 	//print out confirmation
-	cout << curr_message << endl;
-        
-	private_message();
-      } else if(strcmp(op, "B\n") == 0){
+	//cout << curr_message << endl;
+	cout << "end of private" << endl;
+        continue;
+	//private_message();
+      } else if(strcmp(message_type.c_str(), "B") == 0){
 	broadcast();
-      } else if(strcmp(op, "E\n") == 0){
+      } else if(strcmp(message_type.c_str(), "E")== 0){
 	break;
 	//exit(1);
       } else {
 	printf("Invalid Entry\n");
       }
-      
-      
+         
     }
+
+    //Exit
+    //delete user from users vector
+    //pthread_join
+    //might need to send something to server
     if(close(s) != 0) {
       printf("Socket was not closed\n");
     }
@@ -205,7 +215,7 @@ void *handle_messages(void *socket_desc){
   //char buf[MAX_LINE]; int s;
   string message;
   string user = "temp user";
-  while(leave == 0) {
+  while(1) {
     bzero((char *)& buf, sizeof(buf));
       if(recv(s, buf, sizeof(buf) + 1, 0) == -1){
         perror("Client receive error\n");
@@ -218,9 +228,11 @@ void *handle_messages(void *socket_desc){
       command_messages.push_back(message); //lock
     } else {
       message.erase(0,1);
-      cout << "#### New Message: Message Received from " << user << ": " << message << "####\n" << endl; 
+      cout << "#### New Message: Message Received from " << user << ": " << message << "####\n";
+      break;
     }
   }
+  cout << "made it out of handle_messages\n>> ";
 }
 
 void private_message(){

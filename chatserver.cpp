@@ -215,7 +215,7 @@ void *connection_handler(void *socket_desc) {
         strcat(server_msg, "\n");
       }
       //send current users to client 
-      strcat(mod,a);
+      strcat(mod, a);
       strcat(mod, server_msg);
       if(send(sock, mod, sizeof(mod) + 1, 0) == -1){
         perror("Server send error\n");
@@ -262,7 +262,7 @@ void *connection_handler(void *socket_desc) {
         cout << "send confirmed message" << endl;
         strcpy(server_msg, "Message Sent: Confirmed\n");
         bzero((char *)& mod, sizeof(mod));
-        strcat(mod, b);
+        strcat(mod, a);
         strcat(mod, server_msg);
         if(send(sock,mod, sizeof(mod) + 1, 0) == -1){
           perror("Server send error\n");
@@ -319,5 +319,5 @@ void *connection_handler(void *socket_desc) {
       
   }
 
-  //begin shutdown protocol  
+  //begin shutdown protocol
 }
