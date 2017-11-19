@@ -124,7 +124,7 @@ void *connection_handler(void *socket_desc) {
   FILE *fp = fopen("login.txt", "ab+"); //lock
   while((read = getline(&line, &len, fp)) != -1){
     char *token = strtok(line, ":");
-    if(strcmp(token, client_msg) == 0){
+    if(strcmp(token, username) == 0){
       returning = 1;
     }
   }

@@ -179,14 +179,12 @@ int main(int argc, char * argv[]) {
 	  if(command_messages.size() > 0) {
 	    curr_message = command_messages[0];
 	    command_messages.erase(command_messages.begin());
-	    cout << curr_message;
+	    //cout << curr_message;
 	    break;
 	  }
-	  //break;
 	}
 	cout << "out of while loop"<<endl;
-	//print out confirmation
-	//cout << curr_message << endl;
+	cout << curr_message << endl;
 	cout << "end of private" << endl;
         continue;
 	//private_message();
@@ -228,7 +226,7 @@ void *handle_messages(void *socket_desc){
       command_messages.push_back(message); //lock
     } else {
       message.erase(0,1);
-      cout << "#### New Message: Message Received from " << user << ": " << message << "####\n";
+      cout << "#### New Message: Message Received from " << user << ": " << message << " ####\n";
       break;
     }
   }
