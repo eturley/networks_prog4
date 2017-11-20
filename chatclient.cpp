@@ -188,38 +188,42 @@ int main(int argc, char * argv[]) {
 	cout << "end of private" << endl;
         continue;
 	//private_message();
-	  } else if(strcmp(message_type.c_str(), "B") == 0){
-		  string confirmation_message;
-		  // send message type
-		  if(send(s, message_type.c_str(), strlen(message_type.c_str()) + 1, 0) == -1){
-			  perror("client send error\n");
-			  exit(1);
-		  }
-		  // receive ack from server
-		  bzero((char *)& buf, sizeof(buf));
-		  if(recv(s, buf, sizeof(buf) + 1, 0) == -1) {
-			  perror("client receive error");
-			  exit(1);
-		  }
-		  //prompt for message to be sent
-		  cout << "Please enter the message you would like to send>> ";
-		  cin >> message_to_send;
-		  //send message
-		  if(send(s, message_to_send.c_str(), strlen(message_to_send.c_str()) + 1, 0) == -1){
-			  perror("client send error\n");
-			  exit(1);
-		  }
- 
-		  // receive and print confirmation
-		  bzero((char *)& confirmation_message, sizeof(confirmation_message));
-		  if(recv(s, buf, sizeof(buf) + 1, 0) == -1) {
-			  perror("client receive error");
-			  exit(1);
-		  }
-		  cout << confirmation_message << endl;
-		  continue;
-	  //broadcast();
+      } else if(strcmp(message_type.c_str(), "B") == 0){
+	string confirmation_message;
+	// send message type
+	if(send(s, message_type.c_str(), strlen(message_type.c_str()) + 1, 0) == -1){
+	  perror("client send error\n");
+	  exit(1);
+	}
+	// receive ack from server
+	bzero((char *)& buf, sizeof(buf));
+	if(recv(s, buf, sizeof(buf) + 1, 0) == -1) {
+	  perror("client receive error");
+	  exit(1);
+	}
+	//prompt for message to be sent
+	cout << "Please enter the message you would like to send>> ";
+	cin >> message_to_send;
+	cout << "msg to send: "<<message_to_send<<endl;
+	//send message
+	if(send(s, message_to_send.c_str(), strlen(message_to_send.c_str()) + 1, 0) == -1){
+	  perror("client send error\n");
+	  exit(1);
+	}
+	
+	// receive and print confirmation
+	bzero((char *)& confirmation_message, sizeof(confirmation_message));
+	if(recv(s, buf, sizeof(buf) + 1, 0) == -1) {
+	  perror("client receive error");
+	  exit(1);
+	}
+	cout << confirmation_message << endl;
+	continue;
+	//broadcast();
       } else if(strcmp(message_type.c_str(), "E")== 0){
+	if(send(s, message_type.c_str(), strlen(message_type.c_str()) + 1, 0) == -1) {
+	  perror("client send error\n");
+	}
 	break;
 	//exit(1);
       } else {
@@ -259,7 +263,7 @@ void *handle_messages(void *socket_desc){
       break;
     }
   }
-  cout << "made it out of handle_messages\n>> ";
+  //cout << "made it out of handle_messages\n>> ";
 }
 
 void private_message(){

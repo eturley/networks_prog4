@@ -163,7 +163,6 @@ void *connection_handler(void *socket_desc) {
     }
   }
   else {
-    //cout << "username is: " << username << endl;
     strcat(username, ":");
     fprintf(fp2, username);
     strcat(password, "\n");
@@ -221,7 +220,7 @@ void *connection_handler(void *socket_desc) {
         perror("Server send error\n");
         //exit(1);
       }
-      
+      cout << client_msg;
       //receive username of private message 
       bzero((char *)& username, sizeof(client_msg));
       if(recv(sock, username, sizeof(client_msg) + 1, 0) == -1){
@@ -235,6 +234,7 @@ void *connection_handler(void *socket_desc) {
         perror("Server receive error\n");
         //exit(1);
       }
+      //cout << client_msg << endl; //debug
       
       //find socket number for target user
       for (auto it = current_users.begin(); it != current_users.end(); it++) {
@@ -313,10 +313,19 @@ void *connection_handler(void *socket_desc) {
     
     else if(client_msg[0] == 'E'){ //exiting
       //remove username from current users
-      //exit = 1;
+      int index, i = 0;
+      for (auto it = current_users.begin(); it != current_users.end(); it++) {
+	i++;
+        if (strcmp((it->first).c_str(), username) == 0) {
+	  index = i;
+	}
+      }
+      current_users.erase(current_users.begin() + index);
+      for (auto it = current_users.begin(); it != current_users.end(); it++) {
+	cout << it->first << " " << it->second<<endl;
+      }
       continue;
-    }
-      
+    } 
   }
 
   //begin shutdown protocol
