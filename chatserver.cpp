@@ -177,12 +177,13 @@ void *connection_handler(void *socket_desc) {
   //add current users to a vector
   if(valid_login){
     user = username;
-    user = user.substr(0, user.size() - 1);
-    //user = "user2";
+    //user = user.substr(0, user.size() - 1);
+    if(user[user.size() - 1] == ':'){
+      user = user.substr(0, user.size() - 1);
+    }
     current_users.push_back(make_pair(user, sock)); //lock
   }
 
-  //might have to do htons stuff?
   if(send(sock, &valid_login, sizeof(valid_login), 0) == -1){
     perror("Server send error\n");
     //exit(1);
@@ -218,9 +219,8 @@ void *connection_handler(void *socket_desc) {
       strcat(mod, server_msg);
       if(send(sock, mod, sizeof(mod) + 1, 0) == -1){
         perror("Server send error\n");
-        //exit(1);
       }
-      cout << client_msg;
+      //cout << client_msg;
       //receive username of private message 
       bzero((char *)& username, sizeof(client_msg));
       if(recv(sock, username, sizeof(client_msg) + 1, 0) == -1){
@@ -234,7 +234,7 @@ void *connection_handler(void *socket_desc) {
         perror("Server receive error\n");
         //exit(1);
       }
-      //cout << client_msg << endl; //debug
+      cout << "received message: " << client_msg << endl; //debug
       
       //find socket number for target user
       for (auto it = current_users.begin(); it != current_users.end(); it++) {
@@ -252,7 +252,6 @@ void *connection_handler(void *socket_desc) {
       if (found == 1) {
         if(send(target_sock, mod, sizeof(mod) + 1, 0) == -1){
           perror("Server send error\n");
-          //exit(1);
         }
       }
       
@@ -281,7 +280,7 @@ void *connection_handler(void *socket_desc) {
     }
       
     else if(client_msg[0] == 'B') { //broadcast message
-		cout << "in B if" << endl;
+      cout << "in B if" << endl;
       // send ack to client to prompt for message to be sent
       bzero((char *)& server_msg, sizeof(client_msg));
       strcpy(server_msg, "Broadcast command received. Ready to receive message\n");

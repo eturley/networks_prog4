@@ -21,8 +21,7 @@
 using namespace std;
 
 void *handle_messages(void *socket_desc);
-void private_message();
-void broadcast();
+void prompt_for_input();
 vector<string> command_messages;
 char buf[MAX_LINE];
 int s, leave = 0;
@@ -128,11 +127,13 @@ int main(int argc, char * argv[]) {
       string message_to_send; 
       string target_user; 
       string message_type;
-      printf("Welcome to Online Chat Room!\n\tEnter P for private conversation.\n\tEnter B for message broadcasting.\n\tEnter E to exit.\n");
+      prompt_for_input();
+      /*printf("Welcome to Online Chat Room!\n\tEnter P for private conversation.\n\tEnter B for message broadcasting.\n\tEnter E to exit.\n");
 
-      printf(">> ");
-      //fgets(op, sizeof(op), stdin);
-      cin >> message_type;
+	printf(">> ");*/
+
+      //cin >> message_type;
+      getline(cin, message_type);
 
       //Private Message
       if(strcmp(message_type.c_str(), "P")==0){
@@ -155,8 +156,8 @@ int main(int argc, char * argv[]) {
 	//prompt user for username
 	cout << "Please enter the user you would like to chat with >> ";
 	bzero((char *)& username, sizeof(username));
-	cin >> target_user;
-        
+	getline(cin, target_user);
+
 	//send username
 	if(send(s, target_user.c_str(), strlen(target_user.c_str()) + 1, 0) == -1){
 	  perror("client send error\n");
@@ -165,7 +166,7 @@ int main(int argc, char * argv[]) {
         
 	//prompt for message to be sent
 	cout << "Please enter the message you would like to send>> ";
-	cin >> message_to_send;
+	getline(cin, message_to_send);
         
 	//send message
 	if(send(s, message_to_send.c_str(), strlen(message_to_send.c_str()) + 1, 0) == -1){
@@ -183,12 +184,8 @@ int main(int argc, char * argv[]) {
 	    break;
 	  }
 	}
-	cout << "out of while loop"<<endl;
 	cout << curr_message << endl;
-	cout << "end of private" << endl;
         continue;
-	//private_message();
-	  //broadcast();
       } else if(strcmp(message_type.c_str(), "B") == 0){
 	string confirmation_message;
 	// send message type
@@ -204,7 +201,8 @@ int main(int argc, char * argv[]) {
 	}
 	//prompt for message to be sent
 	cout << "Please enter the message you would like to send>> ";
-	cin >> message_to_send;
+	//cin >> message_to_send;
+	getline(cin, message_to_send);
 	cout << "msg to send: "<<message_to_send<<endl;
 	//send message
 	if(send(s, message_to_send.c_str(), strlen(message_to_send.c_str()) + 1, 0) == -1){
@@ -225,26 +223,24 @@ int main(int argc, char * argv[]) {
 	if(send(s, message_type.c_str(), strlen(message_type.c_str()) + 1, 0) == -1) {
 	  perror("client send error\n");
 	}
+	pthread_join(thread, NULL);
+	if(close(s) != 0) {
+	  printf("Socket was not closed\n");
+	}
 	break;
-	//exit(1);
       } else {
 	printf("Invalid Entry\n");
-      }
-         
+      }         
     }
-
     //Exit
-    //delete user from users vector
-    //pthread_join
-    //might need to send something to server
+    /*pthread_join(thread, NULL);
     if(close(s) != 0) {
       printf("Socket was not closed\n");
-    }
+      }*/
 }
 
 //determine if data or command message
 void *handle_messages(void *socket_desc){
-  //char buf[MAX_LINE]; int s;
   string message;
   string user = "temp user";
   while(1) {
@@ -260,11 +256,14 @@ void *handle_messages(void *socket_desc){
       command_messages.push_back(message); //lock
     } else {
       message.erase(0,1);
-      cout << "#### New Message: Message Received from " << user << ": " << message << " ####\n";
-      break;
+      cout << "#### New Message: Message Received from " << user << ": " << message << " ####" << endl;
+      prompt_for_input();
     }
   }
-  //cout << "made it out of handle_messages\n>> ";
+}
+
+void prompt_for_input(){
+  printf("Enter P for private conversation. Enter B for message broadcasting. Enter E to exit. >> ");
 }
 
 void private_message(){
