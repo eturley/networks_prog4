@@ -189,18 +189,22 @@ int main(int argc, char * argv[]) {
         continue;
 	//private_message();
 	  } else if(strcmp(message_type.c_str(), "B") == 0){
+		  cout << "entered B if" << endl;
 		  string confirmation_message;
 		  // send message type
 		  if(send(s, message_type.c_str(), strlen(message_type.c_str()) + 1, 0) == -1){
 			  perror("client send error\n");
 			  exit(1);
 		  }
+		  cout << "sent message type" << endl;
 		  // receive ack from server
 		  bzero((char *)& buf, sizeof(buf));
 		  if(recv(s, buf, sizeof(buf) + 1, 0) == -1) {
 			  perror("client receive error");
 			  exit(1);
 		  }
+		  cout << "received ack from server" << endl;
+		  cout << buf << endl;
 		  //prompt for message to be sent
 		  cout << "Please enter the message you would like to send>> ";
 		  cin >> message_to_send;
