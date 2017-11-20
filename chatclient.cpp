@@ -128,11 +128,6 @@ int main(int argc, char * argv[]) {
       string target_user; 
       string message_type;
       prompt_for_input();
-      /*printf("Welcome to Online Chat Room!\n\tEnter P for private conversation.\n\tEnter B for message broadcasting.\n\tEnter E to exit.\n");
-
-	printf(">> ");*/
-
-      //cin >> message_type;
       getline(cin, message_type);
 
       //Private Message
@@ -187,23 +182,29 @@ int main(int argc, char * argv[]) {
 	cout << curr_message << endl;
         continue;
       } else if(strcmp(message_type.c_str(), "B") == 0){
-	string confirmation_message;
+	string confirmation_message, curr_message;
 	// send message type
 	if(send(s, message_type.c_str(), strlen(message_type.c_str()) + 1, 0) == -1){
 	  perror("client send error\n");
 	  exit(1);
 	}
 	// receive ack from server
-	bzero((char *)& buf, sizeof(buf));
-	if(recv(s, buf, sizeof(buf) + 1, 0) == -1) {
+       	bzero((char *)& buf, sizeof(buf));
+	/*if(recv(s, buf, sizeof(buf) + 1, 0) == -1) {
 	  perror("client receive error");
 	  exit(1);
+	  }*/
+	while(1){
+	  if(command_messages.size() > 0){
+	    curr_message = command_messages[0];
+	    command_messages.erase(command_messages.begin());
+	    break;
+	  }
 	}
+	
 	//prompt for message to be sent
-	cout << "Please enter the message you would like to send>> ";
-	//cin >> message_to_send;
+	cout << curr_message << ">> ";
 	getline(cin, message_to_send);
-	cout << "msg to send: "<<message_to_send<<endl;
 	//send message
 	if(send(s, message_to_send.c_str(), strlen(message_to_send.c_str()) + 1, 0) == -1){
 	  perror("client send error\n");
