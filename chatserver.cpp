@@ -303,16 +303,18 @@ void *connection_handler(void *socket_desc) {
       strcat(mod, b);
       strcat(mod, client_msg);
       for (auto it = current_users.begin(); it != current_users.end(); it++) {
-	if(send(it->second, mod, sizeof(mod) + 1, 0) == -1) {
-	  perror("Server send broadcast message error");
-	  exit(1);
-        }
+	if(it->first != user) {
+	  if(send(it->second, mod, sizeof(mod) + 1, 0) == -1) {
+	    perror("Server send broadcast message error");
+	    exit(1);
+	  }
+	}
       }
 
       // send confirmation that message was sent
       bzero((char *)& mod, sizeof(mod));
-      strcat(mod, a);
       bzero((char *)& server_msg, sizeof(client_msg));
+      strcat(mod, a);
       strcpy(server_msg, "Broadcast message was successfully sent.\n");
       strcat(mod, server_msg);
       if(send(sock, mod, sizeof(mod) + 1, 0) == -1)

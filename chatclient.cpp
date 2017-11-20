@@ -181,7 +181,10 @@ int main(int argc, char * argv[]) {
 	}
 	cout << curr_message << endl;
         continue;
-      } else if(strcmp(message_type.c_str(), "B") == 0){
+      } 
+
+
+      else if(strcmp(message_type.c_str(), "B") == 0){
 	string confirmation_message, curr_message;
 	// send message type
 	if(send(s, message_type.c_str(), strlen(message_type.c_str()) + 1, 0) == -1){
@@ -190,10 +193,6 @@ int main(int argc, char * argv[]) {
 	}
 	// receive ack from server
        	bzero((char *)& buf, sizeof(buf));
-	/*if(recv(s, buf, sizeof(buf) + 1, 0) == -1) {
-	  perror("client receive error");
-	  exit(1);
-	  }*/
 	while(1){
 	  if(command_messages.size() > 0){
 	    curr_message = command_messages[0];
@@ -212,14 +211,20 @@ int main(int argc, char * argv[]) {
 	}
 	
 	// receive and print confirmation
-	bzero((char *)& confirmation_message, sizeof(confirmation_message));
+	/*bzero((char *)& confirmation_message, sizeof(confirmation_message));
 	if(recv(s, buf, sizeof(buf) + 1, 0) == -1) {
 	  perror("client receive error");
 	  exit(1);
+	  }*/
+	while(1){
+	  if(command_messages.size() > 0){
+	    curr_message = command_messages[0];
+	    command_messages.erase(command_messages.begin());
+	    break;
+	  }
 	}
-	cout << confirmation_message << endl;
+	cout << curr_message << endl;
 	continue;
-	//broadcast();
       } else if(strcmp(message_type.c_str(), "E")== 0){
 	if(send(s, message_type.c_str(), strlen(message_type.c_str()) + 1, 0) == -1) {
 	  perror("client send error\n");
