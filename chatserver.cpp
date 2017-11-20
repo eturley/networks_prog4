@@ -281,12 +281,18 @@ void *connection_handler(void *socket_desc) {
     }
       
     else if(client_msg[0] == 'B') { //broadcast message
+		cout << "in B if" << endl;
       // send ack to client to prompt for message to be sent
       bzero((char *)& server_msg, sizeof(client_msg));
       strcpy(server_msg, "Broadcast command received. Ready to receive message\n");
-      if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1){
+	  bzero((char *)& mod, sizeof(mod));
+	  strcat(mod, a);
+	  strcat(mod, server_msg);
+	  cout << "mod: " << mod << endl;
+      if(send(sock, mod, sizeof(mod) + 1, 0) == -1){
         perror("Server send error\n");
       }
+	  cout << "sent ack message" << endl;
 
       // receive message from client
       bzero((char *)& client_msg, sizeof(client_msg));
@@ -296,17 +302,23 @@ void *connection_handler(void *socket_desc) {
       }
 
       // send message to all clients
+	  bzero((char *)& mod, sizeof(mod));
+	  strcat(mod, b);
+	  strcat(mod, client_msg);
       for (auto it = current_users.begin(); it != current_users.end(); it++) {
-	if(send(it->second, client_msg, sizeof(client_msg) + 1, 0) == -1) {
+	if(send(it->second, mod, sizeof(mod) + 1, 0) == -1) {
 	  perror("Server send broadcast message error");
 	  exit(1);
         }
       }
 
       // send confirmation that message was sent
+	  bzero((char *)& mod, sizeof(mod));
+	  strcat(mod, a);
       bzero((char *)& server_msg, sizeof(client_msg));
       strcpy(server_msg, "Broadcast message was successfully sent.\n");
-      if(send(sock, server_msg, sizeof(server_msg) + 1, 0) == -1)
+	  strcat(mod, server_msg);
+      if(send(sock, mod, sizeof(mod) + 1, 0) == -1)
 	perror("Server confirmation send error");
       
     }

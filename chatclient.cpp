@@ -188,6 +188,7 @@ int main(int argc, char * argv[]) {
 	cout << "end of private" << endl;
         continue;
 	//private_message();
+	  //broadcast();
       } else if(strcmp(message_type.c_str(), "B") == 0){
 	string confirmation_message;
 	// send message type
