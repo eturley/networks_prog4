@@ -24,7 +24,7 @@ void *handle_messages(void *socket_desc);
 void prompt_for_input();
 vector<string> command_messages;
 char buf[MAX_LINE];
-int s, leave = 0;
+int s, leave = 0, data_message = 0;
 
 int main(int argc, char * argv[]) {
     
@@ -122,13 +122,14 @@ int main(int argc, char * argv[]) {
       exit(-1);
     }
     while(leave == 0) {
-      cout << "in while loop" << endl;
       string curr_message; 
       string message_to_send; 
       string target_user; 
       string message_type;
+      string newline;
       prompt_for_input();
       getline(cin, message_type);
+      
 
       //Private Message
       if(strcmp(message_type.c_str(), "P")==0){
@@ -162,7 +163,7 @@ int main(int argc, char * argv[]) {
 	//prompt for message to be sent
 	cout << "Please enter the message you would like to send>> ";
 	getline(cin, message_to_send);
-        
+
 	//send message
 	if(send(s, message_to_send.c_str(), strlen(message_to_send.c_str()) + 1, 0) == -1){
 	  perror("client send error\n");
@@ -180,7 +181,7 @@ int main(int argc, char * argv[]) {
 	  }
 	}
 	cout << curr_message << endl;
-        continue;
+        
       } 
 
 
@@ -210,12 +211,6 @@ int main(int argc, char * argv[]) {
 	  exit(1);
 	}
 	
-	// receive and print confirmation
-	/*bzero((char *)& confirmation_message, sizeof(confirmation_message));
-	if(recv(s, buf, sizeof(buf) + 1, 0) == -1) {
-	  perror("client receive error");
-	  exit(1);
-	  }*/
 	while(1){
 	  if(command_messages.size() > 0){
 	    curr_message = command_messages[0];
@@ -238,11 +233,6 @@ int main(int argc, char * argv[]) {
 	printf("Invalid Entry\n");
       }         
     }
-    //Exit
-    /*pthread_join(thread, NULL);
-    if(close(s) != 0) {
-      printf("Socket was not closed\n");
-      }*/
 }
 
 //determine if data or command message
@@ -255,15 +245,17 @@ void *handle_messages(void *socket_desc){
         perror("Client receive error\n");
         //exit(1);
     }
-    message = buf;
     //send command messages to command vector and print messages from other clients
-    if(message.at(0) == 'C') {
-      message.erase(0,1);
-      command_messages.push_back(message); //lock
-    } else {
-      message.erase(0,1);
-      cout << "#### New Message: Message Received from " << user << ": " << message << " ####" << endl;
-      prompt_for_input();
+    if(message.length() > 0){
+      if(message.at(0) == 'C') {
+	message.erase(0,1);
+	command_messages.push_back(message); //lock
+      } else {
+	if(message == "exit")
+	  break;
+	message.erase(0,1);
+	cout << "#### New Message: Message Received" << ": " << message << " #### Please continue with your previous operation." << endl;
+      }
     }
   }
 }
